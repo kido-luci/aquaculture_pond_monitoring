@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:aquaculture_pond_monitoring/presentation/report_details/report_details_view.dart';
 import 'package:aquaculture_pond_monitoring/presentation/widget/bottom_bar_widget.dart';
 import 'package:aquaculture_pond_monitoring/presentation/widget/app_text.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,237 @@ class ReportView extends StatefulWidget {
 }
 
 class _ReportViewState extends State<ReportView> {
+  late final List<Widget> items;
+
+  @override
+  void initState() {
+    super.initState();
+
+    items = List.generate(
+      300,
+      (index) {
+        final b = Random().nextBool();
+
+        var details = '', title = '', sensor = '';
+
+        if (b) {
+          final hot = Random().nextBool();
+          final tmp = (hot ? 32 : 28) - (Random().nextInt(19) / 10);
+          sensor = 'Sensor nhiệt độ #0${Random().nextInt(10) + 1}';
+
+          details =
+              'Nhiệt độ hồ quá ${hot ? 'nóng' : 'lạnh'}: ${tmp.toStringAsFixed(1)}°C';
+        } else {
+          final acid = Random().nextBool();
+          final tmp = (acid ? 12 : 7) - ((Random().nextInt(19) + 1) / 10);
+
+          sensor = 'Sensor độ pH #0${Random().nextInt(10) + 1}';
+
+          details =
+              'Độ ph quá ${acid ? 'cao' : 'thấp'}: ${tmp.toStringAsFixed(1)}';
+        }
+
+        final area =
+            'Hồ ${Random().nextBool() ? 'cá basa' : 'tôm'} #0${Random().nextInt(4) + 1}';
+
+        title = '$sensor - $area';
+
+        final priorityRan = Random().nextInt(3) + 1;
+
+        final String priorityText;
+        final Color priorityColor;
+
+        switch (priorityRan) {
+          case 1:
+            priorityText = 'Thông thường';
+            priorityColor = Colors.black87;
+            break;
+          case 2:
+            priorityText = 'Trung bình';
+            priorityColor = Colors.orange;
+            break;
+          case 3:
+            priorityText = 'Nghiêm trọng';
+            priorityColor = Colors.deepOrangeAccent;
+            break;
+          case 4:
+            priorityText = 'Tạm hoãn';
+            priorityColor = Colors.deepOrangeAccent;
+            break;
+          default:
+            priorityText = 'N/A';
+            priorityColor = Colors.black87;
+        }
+
+        final priority = Container(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: priorityColor),
+            color: Colors.white,
+          ),
+          child: AppText(
+            priorityText,
+            fontWeight: FontWeight.w500,
+            color: priorityColor,
+            fontSize: 13,
+          ),
+        );
+
+        final statusRan = Random().nextInt(5) + 1;
+
+        final String text;
+        final Color color;
+
+        switch (statusRan) {
+          case 1:
+            text = 'Chờ xử lý';
+            color = Colors.black87;
+            break;
+          case 2:
+            text = 'Đang xử lý';
+            color = Colors.orange;
+            break;
+          case 3:
+            text = 'Đã khắc phục';
+            color = Colors.cyan;
+            break;
+          case 4:
+            text = 'Tạm hoãn';
+            color = Colors.deepOrangeAccent;
+            break;
+          case 5:
+            text = 'Đã đóng';
+            color = Colors.blueAccent;
+            break;
+          default:
+            text = 'N/A';
+            color = Colors.black87;
+        }
+
+        final status = Container(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color),
+            color: Colors.white,
+          ),
+          child: AppText(
+            text,
+            fontWeight: FontWeight.w500,
+            color: color,
+            fontSize: 13,
+          ),
+        );
+
+        final m = Random().nextInt(60);
+        final h = max(12 - index, 1);
+        final time = '${h < 10 ? '0' : ''}$h:${m < 10 ? '0' : ''}$m PM';
+
+        return GestureDetector(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => ReportDetailsView(
+                area: area,
+                sensor: sensor,
+                issue: details,
+                priority: priority,
+                status: status,
+                time: time,
+              ),
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.cyanAccent),
+                color: const Color.fromARGB(255, 206, 227, 230),
+                borderRadius: BorderRadius.circular(8)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    AppText(
+                      title,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                    const Spacer(),
+                    Builder(builder: (context) {
+                      final selected = Random().nextBool();
+
+                      return Container(
+                        height: 20,
+                        width: 20,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black38,
+                          ),
+                          borderRadius: BorderRadius.circular(100),
+                          gradient: selected
+                              ? const LinearGradient(
+                                  colors: [
+                                    Colors.cyan,
+                                    Colors.blue,
+                                  ],
+                                )
+                              : null,
+                          color: selected ? null : Colors.white,
+                        ),
+                        child: selected
+                            ? const Icon(
+                                PhosphorIcons.check_bold,
+                                size: 13,
+                                color: Colors.white,
+                              )
+                            : SizedBox.fromSize(),
+                      );
+                    }),
+                  ],
+                ),
+                AppText(
+                  details,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+                Container(
+                  color: Colors.black26,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  height: 1,
+                ),
+                Row(
+                  children: [
+                    const AppText(
+                      'Hôm nay',
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                      fontSize: 13,
+                    ),
+                    const SizedBox(width: 8),
+                    AppText(
+                      time,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                      fontSize: 12,
+                    ),
+                    const Spacer(),
+                    priority,
+                    const SizedBox(width: 8),
+                    status,
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topBar = Container(
@@ -202,149 +434,39 @@ class _ReportViewState extends State<ReportView> {
                   ).toList(),
                 ),
               ),
+              const SizedBox(height: 10),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.cyanAccent),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.black87,
+                ),
+                alignment: Alignment.centerLeft,
+                child: const Row(
+                  children: [
+                    Icon(
+                      PhosphorIcons.magnifying_glass_bold,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    AppText(
+                      'Tìm cảnh báo, sensor, khu vực ...',
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 15,
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemBuilder: (context, index) => Container(
-                    margin: const EdgeInsets.all(8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.cyanAccent),
-                        color: const Color.fromARGB(255, 206, 227, 230),
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            AppText(
-                              'Sensor nhiệt độ #0${Random().nextInt(10) + 1} - Hồ cá tra #0${Random().nextInt(4) + 1}',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black.withOpacity(0.7),
-                              fontSize: 14,
-                            ),
-                            const Spacer(),
-                            Builder(builder: (context) {
-                              final selected = Random().nextBool();
-
-                              return Container(
-                                height: 20,
-                                width: 20,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.black38,
-                                  ),
-                                  borderRadius: BorderRadius.circular(100),
-                                  gradient: selected
-                                      ? const LinearGradient(
-                                          colors: [
-                                            Colors.cyan,
-                                            Colors.blue,
-                                          ],
-                                        )
-                                      : null,
-                                ),
-                                child: selected
-                                    ? const Icon(
-                                        PhosphorIcons.check_bold,
-                                        size: 13,
-                                        color: Colors.white,
-                                      )
-                                    : SizedBox.fromSize(),
-                              );
-                            }),
-                          ],
-                        ),
-                        Builder(builder: (context) {
-                          final hot = Random().nextBool();
-                          final tmp =
-                              (hot ? 32 : 28) - (Random().nextInt(19) / 10);
-
-                          return AppText(
-                            'Nhiệt độ hồ quá ${hot ? 'nóng' : 'lạnh'}: ${tmp.toStringAsFixed(1)}°C',
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          );
-                        }),
-                        Container(
-                          color: Colors.black26,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          height: 1,
-                        ),
-                        Row(
-                          children: [
-                            const AppText(
-                              'Hôm nay',
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                              fontSize: 13,
-                            ),
-                            const SizedBox(width: 8),
-                            Builder(builder: (context) {
-                              final m = Random().nextInt(60);
-                              final h = max(12 - index, 1);
-
-                              return AppText(
-                                '${h < 10 ? '0' : ''}$h:${m < 10 ? '0' : ''}$m PM',
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black54,
-                                fontSize: 12,
-                              );
-                            }),
-                            const Spacer(),
-                            Builder(builder: (context) {
-                              final status = Random().nextInt(5) + 1;
-
-                              final String text;
-                              final Color color;
-
-                              switch (status) {
-                                case 1:
-                                  text = 'Chờ xử lý';
-                                  color = Colors.black87;
-                                  break;
-                                case 2:
-                                  text = 'Đang xử lý';
-                                  color = Colors.orange;
-                                  break;
-                                case 3:
-                                  text = 'Đã khắc phục';
-                                  color = Colors.cyan;
-                                  break;
-                                case 4:
-                                  text = 'Tạm hoãn';
-                                  color = Colors.deepOrangeAccent;
-                                  break;
-                                case 5:
-                                  text = 'Đã đóng';
-                                  color = Colors.blueAccent;
-                                  break;
-                                default:
-                                  text = 'N/A';
-                                  color = Colors.black87;
-                              }
-
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 4, horizontal: 8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: color),
-                                  color: Colors.white,
-                                ),
-                                child: AppText(
-                                  text,
-                                  fontWeight: FontWeight.w500,
-                                  color: color,
-                                  fontSize: 13,
-                                ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) => items[index],
                 ),
               ),
             ],
